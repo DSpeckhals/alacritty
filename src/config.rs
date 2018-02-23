@@ -268,6 +268,10 @@ pub struct WindowConfig {
     #[serde(default, deserialize_with = "failure_default")]
     dimensions: Dimensions,
 
+    /// Initial position
+    #[serde(default, deserialize_with = "failure_default")]
+    position: Position,
+
     /// Pixel padding
     #[serde(default="default_padding", deserialize_with = "deserialize_padding")]
     padding: Delta,
@@ -294,6 +298,10 @@ fn deserialize_padding<'a, D>(deserializer: D) -> ::std::result::Result<Delta, D
 }
 
 impl WindowConfig {
+    pub fn position(&self) -> Position {
+        self.position
+    }
+
     pub fn decorations(&self) -> bool {
         self.decorations
     }
@@ -303,6 +311,7 @@ impl Default for WindowConfig {
     fn default() -> Self {
         WindowConfig{
             dimensions: Default::default(),
+            position: Default::default(),
             padding: default_padding(),
             decorations: true,
         }
@@ -315,6 +324,10 @@ pub struct Config {
     /// Initial dimensions
     #[serde(default, deserialize_with = "failure_default")]
     dimensions: Option<Dimensions>,
+
+    /// Initial position
+    #[serde(default, deserialize_with = "failure_default")]
+    position: Option<Position>,
 
     /// Pixel padding
     #[serde(default, deserialize_with = "failure_default")]
@@ -1307,6 +1320,12 @@ impl Config {
         self.dimensions.unwrap_or(self.window.dimensions)
     }
 
+    /// Get window position
+    #[inline]
+    pub fn position(&self) -> Position {
+        self.position.unwrap_or(self.window.position)
+    }
+
     /// Get window config
     #[inline]
     pub fn window(&self) -> &WindowConfig {
@@ -1444,6 +1463,33 @@ impl Dimensions {
     #[inline]
     pub fn columns_u32(&self) -> u32 {
         self.columns.0 as u32
+    }
+}
+
+/// Window position
+///
+/// See glutin's [Window](https://docs.rs/glutin/0.12.2/glutin/struct.Window.html#method.get_position)
+#[derive(Debug, Copy, Clone, Deserialize)]
+pub struct Position {
+    /// Window top-left X position
+    pub x: i32,
+
+    /// Window top-left Y position
+    pub y: i32,
+}
+
+impl Default for Position {
+    fn default() -> Position {
+        Position::new(50, 50)
+    }
+}
+
+impl Position {
+    pub fn new(x: i32, y: i32) -> Self {
+        Position {
+            x: x,
+            y: y,
+        }
     }
 }
 

@@ -22,7 +22,7 @@ use glutin::GlContext;
 
 use MouseCursor;
 
-use config::WindowConfig;
+use config::{Position, WindowConfig};
 
 /// Window errors
 #[derive(Debug)]
@@ -456,5 +456,16 @@ impl SetInnerSize<Pixels<u32>> for Window {
     fn set_inner_size<T: ToPoints>(&mut self, size: &T) {
         let size = size.to_points(self.hidpi_factor());
         self.window.set_inner_size(*size.width as _, *size.height as _);
+    }
+}
+
+
+pub trait SetPosition {
+    fn set_position(&mut self, position: Position);
+}
+
+impl SetPosition for Window {
+    fn set_position(&mut self, position: Position) {
+        self.window.set_position(position.x, position.y);
     }
 }

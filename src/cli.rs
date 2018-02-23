@@ -14,7 +14,7 @@
 extern crate log;
 use clap::{Arg, App};
 use index::{Line, Column};
-use config::{Dimensions, Shell};
+use config::{Dimensions, Position, Shell};
 use std::path::{Path, PathBuf};
 use std::borrow::Cow;
 
@@ -26,6 +26,7 @@ pub struct Options {
     pub print_events: bool,
     pub ref_test: bool,
     pub dimensions: Option<Dimensions>,
+    pub position: Option<Position>,
     pub title: String,
     pub log_level: log::LevelFilter,
     pub command: Option<Shell<'static>>,
@@ -40,6 +41,7 @@ impl Default for Options {
             print_events: false,
             ref_test: false,
             dimensions: None,
+            position: None,
             title: DEFAULT_TITLE.to_owned(),
             log_level: log::LevelFilter::Warn,
             command: None,
@@ -76,6 +78,12 @@ impl Options {
                 .value_names(&["columns", "lines"])
                 .help("Defines the window dimensions. Falls back to size specified by \
                        window manager if set to 0x0 [default: 80x24]"))
+            .arg(Arg::with_name("position")
+                .long("position")
+                .short("p")
+                .value_names(&["x", "y"])
+                .help("Defines the window position. Falls back to position specified by \
+                       window manager."))
             .arg(Arg::with_name("title")
                 .long("title")
                 .short("t")
@@ -132,6 +140,15 @@ impl Options {
             }
         }
 
+        if let Some(mut position) = matches.values_of("position") {
+            let x = position.next().map(|x| x.parse());
+            let y = position.next().map(|y| y.parse());
+
+            if let (Some(Ok(x)), Some(Ok(y))) = (x, y) {
+                options.position = Some(Position::new(x, y));
+            }
+        }
+
         if let Some(title) = matches.value_of("title") {
             options.title = title.to_owned();
         }
@@ -171,6 +188,10 @@ impl Options {
 
     pub fn dimensions(&self) -> Option<Dimensions> {
         self.dimensions
+    }
+
+    pub fn position(&self) -> Option<Position> {
+        self.position
     }
 
     pub fn command(&self) -> Option<&Shell> {

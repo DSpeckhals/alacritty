@@ -27,7 +27,7 @@ use renderer::{self, GlyphCache, QuadRenderer};
 use selection::Selection;
 use term::{Term, SizeInfo};
 
-use window::{self, Size, Pixels, Window, SetInnerSize};
+use window::{self, Size, Pixels, Window, SetInnerSize, SetPosition};
 
 #[derive(Debug)]
 pub enum Error {
@@ -170,6 +170,12 @@ impl Display {
             renderer.resize(new_viewport_size.width.0 as _, new_viewport_size.height.0 as _);
             viewport_size = new_viewport_size
         }
+
+        let position = options.position()
+            .unwrap_or_else(|| config.position());
+
+        // Set window position
+        window.set_position(position);
 
         info!("Cell Size: ({} x {})", cell_width, cell_height);
 
